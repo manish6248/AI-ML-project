@@ -4,217 +4,586 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Employee Retention Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg:        #f5f7fb;
+    --surface:   #ffffff;
+    --border:    #e5e7eb;
+    --text:      #0f172a;
+    --muted:     #64748b;
+    --primary:   #4f46e5;
+    --primary-2: #6366f1;
+    --leave:     #dc2626;
+    --leave-bg:  #fef2f2;
+    --stay:      #16a34a;
+    --stay-bg:   #f0fdf4;
+    --shadow:    0 1px 2px rgba(15,23,42,.04), 0 8px 24px -6px rgba(15,23,42,.08);
+  }
+
   * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(99,102,241,.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(168,85,247,.08), transparent 60%),
+      var(--bg);
+    color: var(--text);
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+
+  /* ───── header ───── */
+  header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 24px;
-    color: #1f2937;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
-  .card {
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-    padding: 32px;
-    width: 100%;
-    max-width: 720px;
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 18px;
+    box-shadow: 0 6px 20px -6px rgba(99,102,241,.6);
   }
-  h1 {
-    margin: 0 0 4px 0;
-    font-size: 26px;
+  .brand h1 {
+    margin: 0;
+    font-size: 18px;
     font-weight: 700;
-    color: #111827;
+    letter-spacing: -0.01em;
   }
-  .subtitle {
-    color: #6b7280;
-    margin: 0 0 24px 0;
-    font-size: 14px;
+  .brand p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
   }
+  .health {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 500;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #94a3b8;
+  }
+  .dot.live   { background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,.15); }
+  .dot.error  { background: #ef4444; }
+
+  /* ───── grid ───── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 28px;
+  }
+  .card h2 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .card .desc {
+    margin: 0 0 22px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ───── form ───── */
   form {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 18px;
   }
   .field { display: flex; flex-direction: column; }
   .field.full { grid-column: 1 / -1; }
   label {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: #374151;
-    margin-bottom: 6px;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: baseline;
   }
-  .hint { font-weight: 400; color: #9ca3af; }
-  input[type=number], input[type=range], select {
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+  label .val {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  /* numeric input */
+  input[type=number] {
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
     font-size: 14px;
+    font-family: inherit;
     background: #fff;
+    color: var(--text);
     transition: border-color .15s, box-shadow .15s;
   }
-  input[type=number]:focus, select:focus {
+  input[type=number]:focus {
     outline: none;
-    border-color: #6366f1;
+    border-color: var(--primary-2);
     box-shadow: 0 0 0 3px rgba(99,102,241,.15);
   }
-  input[type=range] { padding: 0; }
-  .range-row {
-    display: flex; align-items: center; gap: 10px;
+
+  /* range slider */
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    width: 100%;
+    margin: 6px 0;
   }
-  .range-row input[type=range] { flex: 1; }
-  .range-val {
-    min-width: 44px; text-align: right;
-    font-variant-numeric: tabular-nums;
-    font-weight: 600; color: #4f46e5;
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(to right,
+      var(--primary) 0%, var(--primary) var(--pct, 50%),
+      #e5e7eb var(--pct, 50%), #e5e7eb 100%);
   }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--primary);
+    margin-top: -6px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(99,102,241,.3);
+    transition: transform .1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  input[type=range]::-moz-range-track {
+    height: 6px; border-radius: 999px; background: #e5e7eb;
+  }
+  input[type=range]::-moz-range-progress {
+    height: 6px; border-radius: 999px; background: var(--primary);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--primary);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(99,102,241,.3);
+  }
+
+  /* segmented control */
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 4px;
+    gap: 2px;
+  }
+  .seg input { display: none; }
+  .seg label {
+    margin: 0;
+    padding: 8px 10px;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s;
+    user-select: none;
+    display: block;
+  }
+  .seg input:checked + label {
+    background: #fff;
+    color: var(--primary);
+    box-shadow: 0 1px 2px rgba(15,23,42,.06);
+    font-weight: 600;
+  }
+
+  /* submit button */
+  .actions { grid-column: 1 / -1; display: flex; gap: 12px; margin-top: 4px; }
   button {
-    grid-column: 1 / -1;
-    margin-top: 8px;
-    padding: 14px;
+    flex: 1;
+    padding: 13px 18px;
     border: none;
     border-radius: 10px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
     color: #fff;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
+    font-family: inherit;
     cursor: pointer;
     transition: transform .1s, box-shadow .15s, opacity .15s;
+    box-shadow: 0 4px 14px -4px rgba(99,102,241,.5);
   }
   button:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 8px 16px -4px rgba(102,126,234,.4);
+    box-shadow: 0 8px 20px -4px rgba(99,102,241,.6);
   }
-  button:disabled { opacity: .6; cursor: not-allowed; }
+  button.ghost {
+    flex: 0 0 auto;
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    padding: 13px 16px;
+  }
+  button.ghost:hover:not(:disabled) {
+    color: var(--text);
+    border-color: #cbd5e1;
+    transform: none;
+    box-shadow: none;
+  }
+  button:disabled { opacity: .55; cursor: not-allowed; }
 
-  #result {
-    margin-top: 24px;
-    padding: 20px;
-    border-radius: 12px;
-    display: none;
+  /* ───── result panel ───── */
+  .result-panel { position: relative; min-height: 100%; }
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
   }
-  #result.show { display: block; animation: fade .3s ease-out; }
-  @keyframes fade { from{opacity:0; transform:translateY(8px);} to{opacity:1;} }
-  .result-leave { background:#fef2f2; border:1px solid #fecaca; }
-  .result-stay  { background:#f0fdf4; border:1px solid #bbf7d0; }
-  .result-error { background:#fef3c7; border:1px solid #fde68a; }
-  .result-title {
-    font-size: 18px; font-weight: 700; margin: 0 0 12px 0;
+  .empty svg { width: 56px; height: 56px; margin-bottom: 16px; opacity: .35; }
+  .empty p { margin: 0; font-size: 14px; }
+
+  .result {
+    text-align: center;
+    padding: 12px 8px 8px;
   }
-  .leave .result-title { color:#b91c1c; }
-  .stay  .result-title { color:#15803d; }
-  .bar {
-    height: 10px; background:#e5e7eb; border-radius: 999px; overflow:hidden;
-    margin: 8px 0;
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 5px 10px;
+    border-radius: 999px;
+    margin-bottom: 16px;
   }
-  .bar-fill {
-    height: 100%;
-    transition: width .5s ease;
+  .badge.leave { background: var(--leave-bg); color: var(--leave); }
+  .badge.stay  { background: var(--stay-bg);  color: var(--stay); }
+
+  .ring {
+    position: relative;
+    width: 200px; height: 200px;
+    margin: 0 auto 18px;
   }
-  .leave .bar-fill { background:linear-gradient(90deg,#f87171,#dc2626); }
-  .stay  .bar-fill { background:linear-gradient(90deg,#4ade80,#16a34a); }
-  .row { display:flex; justify-content:space-between; font-size:13px; color:#6b7280;}
-  .row strong { color:#111827; font-variant-numeric: tabular-nums; }
-  footer {
+  .ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+  .ring circle { fill: none; stroke-width: 14; }
+  .ring .track { stroke: #f1f5f9; }
+  .ring .progress {
+    stroke: var(--leave);
+    stroke-linecap: round;
+    transition: stroke-dashoffset .8s cubic-bezier(.22,1,.36,1);
+  }
+  .ring.stay .progress { stroke: var(--stay); }
+  .ring-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .ring-pct {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .ring-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .verdict {
+    margin: 6px 0 14px 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .verdict.leave { color: var(--leave); }
+  .verdict.stay  { color: var(--stay); }
+  .sub {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+  }
+  .stat {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: left;
+  }
+  .stat-label {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .stat-val {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .stat.leave .stat-val { color: var(--leave); }
+  .stat.stay  .stat-val { color: var(--stay); }
+
+  .err-card {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 14px 16px;
     margin-top: 16px;
+    font-size: 13px;
+    color: #92400e;
+  }
+  .err-card strong { display: block; margin-bottom: 4px; color: #78350f; }
+
+  /* footer */
+  footer {
+    margin-top: 32px;
     text-align: center;
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--muted);
   }
-  footer a { color:#6366f1; text-decoration:none; }
-  @media (max-width: 560px) { form { grid-template-columns: 1fr; } }
+  footer a { color: var(--primary); text-decoration: none; font-weight: 500; }
+  footer a:hover { text-decoration: underline; }
+
+  /* loading shimmer */
+  .skeleton {
+    background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer { 0%{background-position: 200% 0;} 100%{background-position: -200% 0;} }
+  .loading-state { padding: 24px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .loading-state .ring-skel { width:200px; height:200px; border-radius:50%; }
+  .loading-state .line { height: 14px; width: 60%; }
+  .loading-state .line.sm { width: 40%; }
+
+  @media (max-width: 560px) {
+    form { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr; }
+    .ring { width: 170px; height: 170px; }
+    .ring-pct { font-size: 32px; }
+  }
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Employee Retention Predictor</h1>
-    <p class="subtitle">Predict whether an employee is likely to leave the company.</p>
+  <div class="shell">
 
-    <form id="predict-form">
-      <div class="field">
-        <label>Satisfaction level <span class="hint">(0.0 – 1.0)</span></label>
-        <div class="range-row">
-          <input type="range" id="satisfaction_level" min="0" max="1" step="0.01" value="0.5" />
-          <span class="range-val" id="satisfaction_level_val">0.50</span>
+    <header>
+      <div class="brand">
+        <div class="logo">ER</div>
+        <div>
+          <h1>Employee Retention Predictor</h1>
+          <p>ML-powered churn analysis &middot; XGBoost model</p>
         </div>
       </div>
+      <div class="health" id="health">
+        <span class="dot" id="health-dot"></span>
+        <span id="health-text">Checking API...</span>
+      </div>
+    </header>
 
-      <div class="field">
-        <label>Last evaluation <span class="hint">(0.0 – 1.0)</span></label>
-        <div class="range-row">
-          <input type="range" id="last_evaluation" min="0" max="1" step="0.01" value="0.7" />
-          <span class="range-val" id="last_evaluation_val">0.70</span>
+    <div class="grid">
+
+      <!-- ─── form ─── -->
+      <section class="card">
+        <h2>Employee details</h2>
+        <p class="desc">Enter the employee's profile to predict churn risk.</p>
+
+        <form id="predict-form">
+          <div class="field full">
+            <label>Satisfaction level <span class="val" id="satisfaction_level_val">0.50</span></label>
+            <input type="range" id="satisfaction_level" min="0" max="1" step="0.01" value="0.5" />
+          </div>
+
+          <div class="field full">
+            <label>Last evaluation score <span class="val" id="last_evaluation_val">0.70</span></label>
+            <input type="range" id="last_evaluation" min="0" max="1" step="0.01" value="0.7" />
+          </div>
+
+          <div class="field">
+            <label>Number of projects</label>
+            <input type="number" id="number_project" min="1" max="10" value="3" required />
+          </div>
+
+          <div class="field">
+            <label>Avg. monthly hours</label>
+            <input type="number" id="average_montly_hours" min="50" max="350" value="200" required />
+          </div>
+
+          <div class="field">
+            <label>Years at company</label>
+            <input type="number" id="time_spend_company" min="0" max="20" value="3" required />
+          </div>
+
+          <div class="field">
+            <label>Salary level</label>
+            <div class="seg" role="radiogroup" aria-label="Salary level">
+              <input type="radio" name="salary" id="sal-low"  value="low" />
+              <label for="sal-low">Low</label>
+              <input type="radio" name="salary" id="sal-med"  value="medium" checked />
+              <label for="sal-med">Medium</label>
+              <input type="radio" name="salary" id="sal-high" value="high" />
+              <label for="sal-high">High</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Work accident</label>
+            <div class="seg" role="radiogroup" aria-label="Work accident">
+              <input type="radio" name="Work_accident" id="acc-no"  value="0" checked />
+              <label for="acc-no">No</label>
+              <input type="radio" name="Work_accident" id="acc-yes" value="1" />
+              <label for="acc-yes">Yes</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Promoted in last 5 years</label>
+            <div class="seg" role="radiogroup" aria-label="Promoted">
+              <input type="radio" name="promotion_last_5years" id="pro-no"  value="0" checked />
+              <label for="pro-no">No</label>
+              <input type="radio" name="promotion_last_5years" id="pro-yes" value="1" />
+              <label for="pro-yes">Yes</label>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="submit-btn" type="submit">Predict retention</button>
+            <button id="reset-btn"  type="button" class="ghost">Reset</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ─── result ─── -->
+      <section class="card result-panel">
+        <h2>Prediction</h2>
+        <p class="desc">Live result from the deployed model.</p>
+
+        <div id="result-area">
+          <div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M3 12l4-4 4 4 7-7"/>
+              <path d="M14 5h7v7"/>
+            </svg>
+            <p>Fill in the form and click <strong>Predict</strong> to see the model's decision.</p>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="field">
-        <label>Number of projects</label>
-        <input type="number" id="number_project" min="1" max="10" value="3" required />
-      </div>
-
-      <div class="field">
-        <label>Average monthly hours</label>
-        <input type="number" id="average_montly_hours" min="50" max="350" value="200" required />
-      </div>
-
-      <div class="field">
-        <label>Years at company</label>
-        <input type="number" id="time_spend_company" min="0" max="20" value="3" required />
-      </div>
-
-      <div class="field">
-        <label>Salary level</label>
-        <select id="salary" required>
-          <option value="low">Low</option>
-          <option value="medium" selected>Medium</option>
-          <option value="high">High</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Had work accident?</label>
-        <select id="Work_accident">
-          <option value="0" selected>No</option>
-          <option value="1">Yes</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Promoted in last 5 years?</label>
-        <select id="promotion_last_5years">
-          <option value="0" selected>No</option>
-          <option value="1">Yes</option>
-        </select>
-      </div>
-
-      <button id="submit-btn" type="submit">Predict</button>
-    </form>
-
-    <div id="result"></div>
+    </div>
 
     <footer>
-      Powered by FastAPI + XGBoost &middot; <a href="/docs" target="_blank">API docs</a>
+      Built with FastAPI + XGBoost &middot; <a href="/docs" target="_blank" rel="noopener">API docs</a>
     </footer>
+
   </div>
 
 <script>
   const $ = id => document.getElementById(id);
 
-  ["satisfaction_level", "last_evaluation"].forEach(id => {
+  /* ── reactive sliders (gradient track + value display) ── */
+  function setupSlider(id) {
     const inp = $(id), out = $(id + "_val");
-    const update = () => out.textContent = parseFloat(inp.value).toFixed(2);
+    const update = () => {
+      out.textContent = parseFloat(inp.value).toFixed(2);
+      const pct = ((inp.value - inp.min) / (inp.max - inp.min)) * 100;
+      inp.style.setProperty("--pct", pct + "%");
+    };
     inp.addEventListener("input", update);
     update();
-  });
+  }
+  setupSlider("satisfaction_level");
+  setupSlider("last_evaluation");
 
+  /* ── health check ── */
+  (async () => {
+    const dot = $("health-dot"), txt = $("health-text");
+    try {
+      const r = await fetch("/health");
+      if (!r.ok) throw new Error();
+      dot.classList.add("live");
+      txt.textContent = "API live";
+    } catch {
+      dot.classList.add("error");
+      txt.textContent = "API offline";
+    }
+  })();
+
+  /* ── form ── */
   const form   = $("predict-form");
   const btn    = $("submit-btn");
-  const result = $("result");
+  const resetBtn = $("reset-btn");
+  const area   = $("result-area");
+
+  function getRadio(name) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : null;
+  }
+
+  resetBtn.addEventListener("click", () => {
+    form.reset();
+    setupSlider("satisfaction_level");
+    setupSlider("last_evaluation");
+    area.innerHTML = `
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M3 12l4-4 4 4 7-7"/><path d="M14 5h7v7"/>
+        </svg>
+        <p>Fill in the form and click <strong>Predict</strong> to see the model's decision.</p>
+      </div>`;
+  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -225,15 +594,19 @@
       number_project:        parseInt($("number_project").value, 10),
       average_montly_hours:  parseInt($("average_montly_hours").value, 10),
       time_spend_company:    parseInt($("time_spend_company").value, 10),
-      Work_accident:         parseInt($("Work_accident").value, 10),
-      promotion_last_5years: parseInt($("promotion_last_5years").value, 10),
-      salary:                $("salary").value,
+      Work_accident:         parseInt(getRadio("Work_accident"), 10),
+      promotion_last_5years: parseInt(getRadio("promotion_last_5years"), 10),
+      salary:                getRadio("salary"),
     };
 
     btn.disabled = true;
-    btn.textContent = "Predicting...";
-    result.className = "";
-    result.classList.remove("show");
+    btn.textContent = "Predicting…";
+    area.innerHTML = `
+      <div class="loading-state">
+        <div class="skeleton ring-skel"></div>
+        <div class="skeleton line"></div>
+        <div class="skeleton line sm"></div>
+      </div>`;
 
     try {
       const r = await fetch("/predict", {
@@ -251,28 +624,72 @@
       renderError(err.message || "Request failed");
     } finally {
       btn.disabled = false;
-      btn.textContent = "Predict";
+      btn.textContent = "Predict retention";
     }
   });
 
   function renderResult(data) {
-    const leavePct = (data.leave_probability * 100).toFixed(1);
-    const stayPct  = (data.stay_probability * 100).toFixed(1);
-    const cls = data.will_leave ? "leave" : "stay";
-    result.className = cls + " " + (data.will_leave ? "result-leave" : "result-stay");
-    result.innerHTML = `
-      <p class="result-title">${data.will_leave ? "⚠ Likely to LEAVE" : "✓ Likely to STAY"}</p>
-      <div class="row"><span>Leave probability</span><strong>${leavePct}%</strong></div>
-      <div class="bar"><div class="bar-fill" style="width:${leavePct}%"></div></div>
-      <div class="row"><span>Stay probability</span><strong>${stayPct}%</strong></div>
+    const leavePct = data.leave_probability * 100;
+    const stayPct  = data.stay_probability * 100;
+    const willLeave = data.will_leave;
+    const cls       = willLeave ? "leave" : "stay";
+
+    /* ring math: circle r=85 => circumference ≈ 534.07 */
+    const C = 2 * Math.PI * 85;
+    const focusPct = willLeave ? leavePct : stayPct;
+    const offset = C * (1 - focusPct / 100);
+
+    area.innerHTML = `
+      <div class="result">
+        <div class="badge ${cls}">${willLeave ? "● High churn risk" : "● Likely to retain"}</div>
+
+        <div class="ring ${cls}">
+          <svg viewBox="0 0 200 200">
+            <circle class="track"    cx="100" cy="100" r="85"></circle>
+            <circle class="progress" cx="100" cy="100" r="85"
+                    stroke-dasharray="${C.toFixed(2)}"
+                    stroke-dashoffset="${C.toFixed(2)}"
+                    id="ring-progress"></circle>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-pct">${focusPct.toFixed(1)}%</div>
+            <div class="ring-label">${willLeave ? "Leave probability" : "Stay probability"}</div>
+          </div>
+        </div>
+
+        <div class="verdict ${cls}">${willLeave ? "Likely to LEAVE" : "Likely to STAY"}</div>
+        <p class="sub">${
+          willLeave
+            ? "This profile shows churn signals from the training data. Consider engagement or retention actions."
+            : "This profile aligns with employees who tend to remain at the company."
+        }</p>
+
+        <div class="stats">
+          <div class="stat leave">
+            <div class="stat-label">Leave</div>
+            <div class="stat-val">${leavePct.toFixed(2)}%</div>
+          </div>
+          <div class="stat stay">
+            <div class="stat-label">Stay</div>
+            <div class="stat-val">${stayPct.toFixed(2)}%</div>
+          </div>
+        </div>
+      </div>
     `;
-    result.classList.add("show");
+
+    /* trigger ring animation after element is in the DOM */
+    requestAnimationFrame(() => {
+      const ring = $("ring-progress");
+      if (ring) ring.style.strokeDashoffset = offset.toFixed(2);
+    });
   }
 
   function renderError(msg) {
-    result.className = "result-error";
-    result.innerHTML = `<p class="result-title" style="color:#92400e;">Error</p><div>${msg}</div>`;
-    result.classList.add("show");
+    area.innerHTML = `
+      <div class="err-card">
+        <strong>Could not get prediction</strong>
+        ${msg}
+      </div>`;
   }
 </script>
 </body>
