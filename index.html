@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Employee Retention Predictor</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: #1f2937;
+  }
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    padding: 32px;
+    width: 100%;
+    max-width: 720px;
+  }
+  h1 {
+    margin: 0 0 4px 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .subtitle {
+    color: #6b7280;
+    margin: 0 0 24px 0;
+    font-size: 14px;
+  }
+  form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .field { display: flex; flex-direction: column; }
+  .field.full { grid-column: 1 / -1; }
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+  .hint { font-weight: 400; color: #9ca3af; }
+  input[type=number], input[type=range], select {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type=number]:focus, select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+  }
+  input[type=range] { padding: 0; }
+  .range-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .range-row input[type=range] { flex: 1; }
+  .range-val {
+    min-width: 44px; text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600; color: #4f46e5;
+  }
+  button {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .1s, box-shadow .15s, opacity .15s;
+  }
+  button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px -4px rgba(102,126,234,.4);
+  }
+  button:disabled { opacity: .6; cursor: not-allowed; }
+
+  #result {
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: 12px;
+    display: none;
+  }
+  #result.show { display: block; animation: fade .3s ease-out; }
+  @keyframes fade { from{opacity:0; transform:translateY(8px);} to{opacity:1;} }
+  .result-leave { background:#fef2f2; border:1px solid #fecaca; }
+  .result-stay  { background:#f0fdf4; border:1px solid #bbf7d0; }
+  .result-error { background:#fef3c7; border:1px solid #fde68a; }
+  .result-title {
+    font-size: 18px; font-weight: 700; margin: 0 0 12px 0;
+  }
+  .leave .result-title { color:#b91c1c; }
+  .stay  .result-title { color:#15803d; }
+  .bar {
+    height: 10px; background:#e5e7eb; border-radius: 999px; overflow:hidden;
+    margin: 8px 0;
+  }
+  .bar-fill {
+    height: 100%;
+    transition: width .5s ease;
+  }
+  .leave .bar-fill { background:linear-gradient(90deg,#f87171,#dc2626); }
+  .stay  .bar-fill { background:linear-gradient(90deg,#4ade80,#16a34a); }
+  .row { display:flex; justify-content:space-between; font-size:13px; color:#6b7280;}
+  .row strong { color:#111827; font-variant-numeric: tabular-nums; }
+  footer {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  footer a { color:#6366f1; text-decoration:none; }
+  @media (max-width: 560px) { form { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Employee Retention Predictor</h1>
+    <p class="subtitle">Predict whether an employee is likely to leave the company.</p>
+
+    <form id="predict-form">
+      <div class="field">
+        <label>Satisfaction level <span class="hint">(0.0 – 1.0)</span></label>
+        <div class="range-row">
+          <input type="range" id="satisfaction_level" min="0" max="1" step="0.01" value="0.5" />
+          <span class="range-val" id="satisfaction_level_val">0.50</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Last evaluation <span class="hint">(0.0 – 1.0)</span></label>
+        <div class="range-row">
+          <input type="range" id="last_evaluation" min="0" max="1" step="0.01" value="0.7" />
+          <span class="range-val" id="last_evaluation_val">0.70</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Number of projects</label>
+        <input type="number" id="number_project" min="1" max="10" value="3" required />
+      </div>
+
+      <div class="field">
+        <label>Average monthly hours</label>
+        <input type="number" id="average_montly_hours" min="50" max="350" value="200" required />
+      </div>
+
+      <div class="field">
+        <label>Years at company</label>
+        <input type="number" id="time_spend_company" min="0" max="20" value="3" required />
+      </div>
+
+      <div class="field">
+        <label>Salary level</label>
+        <select id="salary" required>
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Had work accident?</label>
+        <select id="Work_accident">
+          <option value="0" selected>No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Promoted in last 5 years?</label>
+        <select id="promotion_last_5years">
+          <option value="0" selected>No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+
+      <button id="submit-btn" type="submit">Predict</button>
+    </form>
+
+    <div id="result"></div>
+
+    <footer>
+      Powered by FastAPI + XGBoost &middot; <a href="/docs" target="_blank">API docs</a>
+    </footer>
+  </div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  ["satisfaction_level", "last_evaluation"].forEach(id => {
+    const inp = $(id), out = $(id + "_val");
+    const update = () => out.textContent = parseFloat(inp.value).toFixed(2);
+    inp.addEventListener("input", update);
+    update();
+  });
+
+  const form   = $("predict-form");
+  const btn    = $("submit-btn");
+  const result = $("result");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      satisfaction_level:    parseFloat($("satisfaction_level").value),
+      last_evaluation:       parseFloat($("last_evaluation").value),
+      number_project:        parseInt($("number_project").value, 10),
+      average_montly_hours:  parseInt($("average_montly_hours").value, 10),
+      time_spend_company:    parseInt($("time_spend_company").value, 10),
+      Work_accident:         parseInt($("Work_accident").value, 10),
+      promotion_last_5years: parseInt($("promotion_last_5years").value, 10),
+      salary:                $("salary").value,
+    };
+
+    btn.disabled = true;
+    btn.textContent = "Predicting...";
+    result.className = "";
+    result.classList.remove("show");
+
+    try {
+      const r = await fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${r.status}`);
+      }
+      const data = await r.json();
+      renderResult(data);
+    } catch (err) {
+      renderError(err.message || "Request failed");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Predict";
+    }
+  });
+
+  function renderResult(data) {
+    const leavePct = (data.leave_probability * 100).toFixed(1);
+    const stayPct  = (data.stay_probability * 100).toFixed(1);
+    const cls = data.will_leave ? "leave" : "stay";
+    result.className = cls + " " + (data.will_leave ? "result-leave" : "result-stay");
+    result.innerHTML = `
+      <p class="result-title">${data.will_leave ? "⚠ Likely to LEAVE" : "✓ Likely to STAY"}</p>
+      <div class="row"><span>Leave probability</span><strong>${leavePct}%</strong></div>
+      <div class="bar"><div class="bar-fill" style="width:${leavePct}%"></div></div>
+      <div class="row"><span>Stay probability</span><strong>${stayPct}%</strong></div>
+    `;
+    result.classList.add("show");
+  }
+
+  function renderError(msg) {
+    result.className = "result-error";
+    result.innerHTML = `<p class="result-title" style="color:#92400e;">Error</p><div>${msg}</div>`;
+    result.classList.add("show");
+  }
+</script>
+</body>
+</html>

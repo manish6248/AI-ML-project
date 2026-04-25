@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import Literal
 import joblib
@@ -8,6 +10,14 @@ app = FastAPI(
     title="Employee Retention Prediction API",
     description="Predicts whether an employee is likely to leave the company.",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 model = joblib.load("employee_retention_model.pkl")
@@ -42,9 +52,9 @@ class Prediction(BaseModel):
     stay_probability: float
 
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 def root():
-    return {"status": "ok", "docs": "/docs"}
+    return FileResponse("index.html")
 
 
 @app.get("/health")
